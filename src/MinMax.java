@@ -24,6 +24,10 @@ public class MinMax {
 //            stopTimer();
 //            System.out.println("Total time elapsed: " + getTimeElapsed());
 //        }
+
+        // TODO make a loop to link nodes
+
+
         startTimer();
         uniqueNodeList = generateRandomizedUniqueNodes(100);
         for (int i = 0; i < 100;i++) {
