@@ -1,7 +1,7 @@
 public class Message {
 
-    private int val;
-    private int stageNum;
+    protected int val;
+    protected int stageNum;
 
     public Message(int val, int stageNum) {
         this.val = val;
@@ -22,5 +22,9 @@ public class Message {
 
     public void setStageNum(int stageNum) {
         this.stageNum = stageNum;
+    }
+
+    public String toString() {
+        return "Val : " + val + " stage " + stageNum;
     }
 }

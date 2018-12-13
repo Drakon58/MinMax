@@ -1,11 +1,13 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-public class MinMax {
+public class MinMaxPlus {
 
-    public static final int TIMES_TO_RUN_ALG = 20;
+    public static final int TIMES_TO_RUN_ALG = 10;
 
     public static List<Integer> uniqueNodeListOrder;
-    public static List<MinMaxNode> nodelist;
+    public static List<MinMaxPlusNode> nodelist;
     public static List<Double> timings;
     public static List<Integer> messagesTotal;
     public static double startTime;
@@ -13,6 +15,7 @@ public class MinMax {
     public static int messageCount = 0;
     public static boolean done = false;
     public static List<Integer> listSizes = new ArrayList<>(Arrays.asList(300, 500, 1000, 2000));
+//    public static List<Integer> listSizes = new ArrayList<>(Arrays.asList(300));
 
     public static void main(String[] args) {
         // debounce start timer and vars
@@ -22,7 +25,6 @@ public class MinMax {
             timings = new ArrayList<>();
             messagesTotal = new ArrayList<>();
             System.out.println("List size: " + listSize);
-//            System.out.println(nodelist);
             for (int i = 0; i < TIMES_TO_RUN_ALG; i++) {
                 uniqueNodeListOrder = MinMaxHelper.generateRandomizedUniqueNodes(listSize);
                 nodelist = new ArrayList<>();
@@ -42,43 +44,42 @@ public class MinMax {
         }
     }
 
-    public static void setupNodeList(int listSize) {
-        for (int i = 0; i < listSize; i++) {
-            nodelist.add(new MinMaxNode(uniqueNodeListOrder.get(i)));
-        }
-        for (int i = 0; i < listSize - 1; i++) {
-            MinMaxNode currentMinMaxNode = nodelist.get(i);
-            MinMaxNode rightMinMaxNode = nodelist.get(i+1);
-            currentMinMaxNode.linkRightNeighborNode(rightMinMaxNode);
-            // set first round of messages
-            rightMinMaxNode.sendMessage(new Message(currentMinMaxNode.getCurVal(), currentMinMaxNode.getStageNumber()));
-        }
-            // link the last node generated
-        MinMaxNode firstNode = nodelist.get(0);
-        MinMaxNode lastNode = nodelist.get(nodelist.size()-1);
-        lastNode.linkRightNeighborNode(firstNode);
-//        System.out.println("First node properly linked? " + (nodelist.get(0).getRightNeighbor() == nodelist.get(nodelist.size()-1)));
-        // set last node's message to be from first node
-        firstNode.sendMessage(new Message(lastNode.getCurVal(), lastNode.getStageNumber()));
-//        System.out.println("Last node properly messaged? " + (nodelist.get(nodelist.size()-1).getReceivedMessage().getVal() == nodelist.get(0).getCurVal()));
-
-    }
-
     public static void runAlg(int listSize) {
-//        System.out.println("----INITIAL ROUND START----");
-        for (MinMaxNode node : nodelist) {
+        for (MinMaxPlusNode node : nodelist) {
 //            System.out.println("Doing initial setup for node " + node.getCurVal());
+//            System.out.println(nodelist);
             node.sendMessageIfActiveBeforeCheckAndSurvive();
             node.getReceivedMessage().remove(0);
         }
-//        System.out.println("----INITIAL ROUND END----");
-//        System.out.println(nodelist);
+        
         int currentNodeIndex = 0;
         while (!done) {
 //            System.out.println(nodelist);
             nodelist.get(currentNodeIndex).action();
             currentNodeIndex = (currentNodeIndex + 1)%listSize;
         }
+    }
+
+        public static void setupNodeList(int listSize) {
+        for (int i = 0; i < listSize; i++) {
+            nodelist.add(new MinMaxPlusNode(uniqueNodeListOrder.get(i)));
+        }
+        for (int i = 0; i < listSize - 1; i++) {
+            MinMaxPlusNode currentMinMaxPlusNode = nodelist.get(i);
+            MinMaxPlusNode rightMinMaxPlusNode = nodelist.get(i+1);
+            currentMinMaxPlusNode.linkRightNeighborNode(rightMinMaxPlusNode);
+            // set first round of messages
+            rightMinMaxPlusNode.sendMessage(new MessagePlus(currentMinMaxPlusNode.getCurVal(), currentMinMaxPlusNode.getStageNumber()));
+        }
+        // link the last node generated
+        MinMaxPlusNode firstNode = nodelist.get(0);
+        MinMaxPlusNode lastNode = nodelist.get(nodelist.size()-1);
+        lastNode.linkRightNeighborNode(firstNode);
+//        System.out.println("First node properly linked? " + (nodelist.get(0).getRightNeighbor() == nodelist.get(nodelist.size()-1)));
+        // set last node's message to be from first node
+        firstNode.sendMessage(new MessagePlus(lastNode.getCurVal(), lastNode.getStageNumber()));
+//        System.out.println("Last node properly messaged? " + (nodelist.get(nodelist.size()-1).getReceivedMessage().getVal() == nodelist.get(0).getCurVal()));
+
     }
 
     public static void startTimer() {
@@ -94,5 +95,4 @@ public class MinMax {
     public static double getTimeElapsed() {
         return ((endTime - startTime)/1000000);
     }
-
 }
