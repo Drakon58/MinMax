@@ -83,14 +83,8 @@ public class MinMaxPlusNode  {
                     break;
                 case LEADER:
                     // check if notify stage has completed
-                    if (receivedMessage.get(0).getStageNum() != -1) {
-                        // begin notification
-                        rightNeighbor.sendMessage(new MessagePlus(curVal, -1));
-//                        System.out.println("Leader setting left neighbor " + rightNeighbor.curVal + "'s received message to " + rightNeighbor.receivedMessage.get(0).getVal() + " stage " + rightNeighbor.receivedMessage.get(0).getStageNum() + " and has status of " + rightNeighbor.minMaxState);
-
-                    } else {
+                    if (receivedMessage.get(0).getStageNum() == -1) {
                         MinMaxPlus.done = true;
-//                        System.out.println("Leader " + leaderNode + " is done");
                     }
                     break;
                 case PASSIVE:

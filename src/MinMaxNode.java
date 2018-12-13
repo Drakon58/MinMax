@@ -66,14 +66,9 @@ public class MinMaxNode {
                     break;
                 case LEADER:
                     // check if notify stage has completed
-                    if (receivedMessage.get(0).getStageNum() != -1) {
-                        // begin notification
-                        rightNeighbor.sendMessage(new Message(curVal, -1));
-//                        System.out.println("Leader setting left neighbor " + rightNeighbor.curVal + "'s received message to " + rightNeighbor.receivedMessage.get(0).getVal() + " stage " + rightNeighbor.receivedMessage.get(0).getStageNum() + " and has status of " + rightNeighbor.minMaxState);
-
-                    } else {
+                    if (receivedMessage.get(0).getStageNum() == -1) {
                         MinMax.done = true;
-//                        System.out.println("Leader " + leaderNode + " is done");
+
                     }
                     break;
                 // otherwise a pacified node, so just pass on the message you received unless being notified of leader
@@ -118,7 +113,7 @@ public class MinMaxNode {
             // if survived, send new message after incrementing stage # and updating current value
             minMaxSurvive();
             if (minMaxState == MinMaxState.ACTIVE) {
-                int formerValue = curVal;
+//                int formerValue = curVal;
 //                System.out.println("Formerly " + formerValue + " becoming " + receivedMessage.get(0).getVal() + " and sending stage " + (stageNumber + 1) + " message to node " + rightNeighbor.curVal + " with status " + rightNeighbor.minMaxState);
                 stageNumber++;
                 curVal = receivedMessage.get(0).getVal();
