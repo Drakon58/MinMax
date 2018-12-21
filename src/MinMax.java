@@ -12,9 +12,14 @@ public class MinMax {
     public static double endTime;
     public static int messageCount = 0;
     public static boolean done = false;
-    public static List<Integer> listSizes = new ArrayList<>(Arrays.asList(300, 500, 1000, 2000));
+    // TODO restore this once finished debugging issue
+//    public static List<Integer> listSizes = new ArrayList<>(Arrays.asList(300, 500, 1000, 2000));
+    public static List<Integer> listSizes = new ArrayList<>(Arrays.asList(5));
+    public static List<MinMaxNode> testList;
 
     public static void main(String[] args) {
+        testList = new ArrayList<>();
+        MinMaxHelper.generateTestList(testList);
         // debounce start timer and vars
         MinMaxHelper.generateRandomizedUniqueNodes(1);
         startTimer();
@@ -23,18 +28,21 @@ public class MinMax {
             messagesTotal = new ArrayList<>();
             System.out.println("List size: " + listSize);
 //            System.out.println(nodelist);
-            for (int i = 0; i < TIMES_TO_RUN_ALG; i++) {
+            // TODO restore this once finished debugging issue
+//            for (int i = 0; i < TIMES_TO_RUN_ALG; i++) {
                 uniqueNodeListOrder = MinMaxHelper.generateRandomizedUniqueNodes(listSize);
                 nodelist = new ArrayList<>();
                 setupNodeList(listSize);
                 startTimer();
+                // TODO restore this once finished debugging issue
                 runAlg(listSize);
                 stopTimer();
                 done = false;
                 timings.add(getTimeElapsed());
                 messagesTotal.add(messageCount);
                 messageCount = 0;
-            }
+                // TODO restore this once finished debugging issue
+//            }
             System.out.println("Timings were: \n" + timings);
             System.out.println("Message counts were: \n" + messagesTotal);
             System.out.println("Avg time was: " + MinMaxHelper.avgTime(timings));
@@ -66,7 +74,10 @@ public class MinMax {
 
     public static void runAlg(int listSize) {
 //        System.out.println("----INITIAL ROUND START----");
-        for (MinMaxNode node : nodelist) {
+                System.out.println(testList);
+        // TODO restore this once finished debugging issue
+//        for (MinMaxNode node : nodelist) {
+        for (MinMaxNode node : testList) {
 //            System.out.println("Doing initial setup for node " + node.getCurVal());
             node.sendMessageIfActiveBeforeCheckAndSurvive();
             node.getReceivedMessage().remove(0);
@@ -75,10 +86,13 @@ public class MinMax {
 //        System.out.println(nodelist);
         int currentNodeIndex = 0;
         while (!done) {
-//            System.out.println(nodelist);
-            nodelist.get(currentNodeIndex).action();
+            System.out.println(testList);
+            // TODO restore this once finished debugging issue
+//            nodelist.get(currentNodeIndex).action();
+            testList.get(currentNodeIndex).action();
             currentNodeIndex = (currentNodeIndex + 1)%listSize;
         }
+        System.out.println(testList);
     }
 
     public static void startTimer() {
