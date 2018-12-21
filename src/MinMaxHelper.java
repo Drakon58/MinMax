@@ -37,4 +37,12 @@ public class MinMaxHelper {
         else
             return fibonacci(n - 1) + fibonacci(n - 2);
     }
+
+    public static void generateTestList(List<MinMaxNode> testList) {
+        testList.add(new MinMaxNode(5));
+        testList.add(new MinMaxNode(4));
+        testList.add(new MinMaxNode(3));
+        testList.add(new MinMaxNode(2));
+        testList.add(new MinMaxNode(1));
+    }
 }
