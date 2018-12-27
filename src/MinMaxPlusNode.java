@@ -9,7 +9,7 @@ public class MinMaxPlusNode  {
     private int lastDeathStageNumber = -1;
     private Integer originalVal;
     private Integer curVal;
-    // - idnicates hasn't died ever yet
+    // - indicates hasn't died ever yet
     private Integer lastDeathCurVal = -1;
     private List<MessagePlus> receivedMessage;
     private MinMaxPlusNode rightNeighbor;
@@ -52,14 +52,6 @@ public class MinMaxPlusNode  {
 
     public int getStageNumber() {
         return stageNumber;
-    }
-
-    public Integer getLeaderNode() {
-        return leaderNode;
-    }
-
-    public MinMaxPlusNode getRightNeighbor() {
-        return rightNeighbor;
     }
 
     public List<MessagePlus> getReceivedMessage() {
@@ -115,10 +107,6 @@ public class MinMaxPlusNode  {
         }
     }
 
-    // TODO Was last working on checking if revival was being done properly. Suspicious that we do ressurection at up to stage 12 for size 300.
-   // At least the nodes are reviving on the right disntace conditions.DOublec check the odd cases to see if we are ressurecting the nodes only if we
-   // have a smaller value than the received messages and an old stage one less than the message stage. Mayeb the queued messages are screwing
-   // things up too due to the pacified node just consuming it's stack of messages? MAybe clear message queue once pacified.
     public boolean shouldRevive(MessagePlus receivedMessagePlus) {
        // revive node on even stage stop, else skip over
        boolean shouldRevive = false;
@@ -135,7 +123,6 @@ public class MinMaxPlusNode  {
     }
 
     public void minMaxSurvive(MessagePlus receivedMessagePlus) {
-//        System.out.println("Node " + curVal + " recieved message " + receivedMessage.get(0).getVal() + " stage " + receivedMessage.get(0).getStageNum());
         // even stage, kill node if smaller
         if (MinMaxHelper.isEvenStageMessage(receivedMessagePlus)) {
             if (receivedMessagePlus.getVal() < curVal) {
@@ -152,7 +139,6 @@ public class MinMaxPlusNode  {
                lastDeathStageNumber = stageNumber;
             }
         }
-//        System.out.println("Node " + curVal +" survived? " + (minMaxState == MinMaxState.ACTIVE));
     }
 
     public void checkAndSetIfLeader(MessagePlus messagePlus) {
@@ -179,14 +165,11 @@ public class MinMaxPlusNode  {
                 // if survived, send new message after incrementing stage # and updating current value
                 minMaxSurvive(messagePlus);
                 if (minMaxState == MinMaxState.ACTIVE) {
-//                    int formerValue = curVal;
-//                    System.out.println("Formerly " + formerValue + " becoming " + receivedMessage.get(0).getVal() + " and sending stage " + (stageNumber + 1) + " message to node " + rightNeighbor.curVal + " with status " + rightNeighbor.minMaxState);
                     stageNumber++;
                     curVal = messagePlus.getVal();
                     MessagePlus messageToSend = new MessagePlus(curVal, stageNumber);
                     setDistance(messageToSend);
                     rightNeighbor.sendMessage(messageToSend);
-//                System.out.println("Node with former val " + formerValue + " is now " + curVal + " with status " + minMaxState + " and right neighbor received message of " + rightNeighbor.receivedMessage.get(0).getVal());
                 }
 
             }

@@ -49,7 +49,6 @@ public class MinMax {
             nodelist.add(new MinMaxNode(uniqueNodeListOrder.get(i)));
         }
         for (int i = 0; i < listSize - 1; i++) {
-            // TODO restore these two lines later
             MinMaxNode currentMinMaxNode = nodelist.get(i);
             MinMaxNode rightMinMaxNode = nodelist.get(i+1);
             currentMinMaxNode.linkRightNeighborNode(rightMinMaxNode);

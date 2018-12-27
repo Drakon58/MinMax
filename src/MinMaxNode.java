@@ -4,7 +4,6 @@ import java.util.List;
 public class MinMaxNode {
     // -1 as stage number is flag that we are done and that the message received contains the leader node number
     private int stageNumber = 1;
-    private Integer originalVal;
     private Integer curVal;
     private List<Message> receivedMessages;
     private MinMaxNode rightNeighbor;
@@ -13,7 +12,6 @@ public class MinMaxNode {
     private Integer leaderNode;
 
     public MinMaxNode (int value) {
-        originalVal = value;
         curVal = value;
         receivedMessages = new ArrayList<>();
     }
@@ -33,14 +31,6 @@ public class MinMaxNode {
 
     public int getStageNumber() {
         return stageNumber;
-    }
-
-    public Integer getLeaderNode() {
-        return leaderNode;
-    }
-
-    public MinMaxNode getRightNeighbor() {
-        return rightNeighbor;
     }
 
     public List<Message> getReceivedMessages() {
