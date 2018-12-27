@@ -25,6 +25,6 @@ public class Message {
     }
 
     public String toString() {
-        return "Val : " + val + " stage " + stageNum;
+        return "V:" + val + " S:" + stageNum;
     }
 }

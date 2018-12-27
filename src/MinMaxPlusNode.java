@@ -36,7 +36,7 @@ public class MinMaxPlusNode  {
     }
 
     public void sendMessage(MessagePlus receivedMessage) {
-        if (receivedMessage.getStageNum()%2 == 0) {
+        if (MinMaxHelper.isEvenStageMessage(receivedMessage)) {
             receivedMessage.decrementDistance();
         } else {
             // odd stage travels as far as it wants
@@ -68,74 +68,95 @@ public class MinMaxPlusNode  {
 
     public void action() {
         if (!receivedMessage.isEmpty()) {
-            MessagePlus recievedMessagePlus = receivedMessage.get(0);
+//            MessagePlus receivedMessagePlus = receivedMessage.get(0);
+            MessagePlus receivedMessagePlus = receivedMessage.get(receivedMessage.size()-1);
             switch(minMaxState) {
                 case ACTIVE:
-                    if (recievedMessagePlus.getStageNum() == -1) {
+                    if (receivedMessagePlus.getStageNum() == -1) {
                         minMaxState = MinMaxState.NOTIFIED;
-                        leaderNode = recievedMessagePlus.getVal();
-                        System.out.println("Node " + originalVal + " has been notified");
-                        rightNeighbor.sendMessage(receivedMessage.get(0));
+                        leaderNode = receivedMessagePlus.getVal();
+//                        System.out.println("Node " + originalVal + " has been notified");
+                        rightNeighbor.sendMessage(receivedMessagePlus);
                     } else {
-                        checkAndSetIfLeader();
-                        sendMessageIfActiveBeforeCheckAndSurvive();
+                        checkAndSetIfLeader(receivedMessagePlus);
+                        sendMessageIfActiveBeforeCheckAndSurvive(receivedMessagePlus);
                     }
                     break;
                 case LEADER:
                     // check if notify stage has completed
-                    if (receivedMessage.get(0).getStageNum() == -1) {
+                    if (receivedMessagePlus.getStageNum() == -1) {
                         MinMaxPlus.done = true;
                     }
                     break;
                 case PASSIVE:
-                    if (recievedMessagePlus.getStageNum() == -1) {
+                    if (receivedMessagePlus.getStageNum() == -1) {
                         minMaxState = MinMaxState.NOTIFIED;
-                        leaderNode = recievedMessagePlus.getVal();
-                        System.out.println("Node " + originalVal + " has been notified");
-                        rightNeighbor.sendMessage(receivedMessage.get(0));
+                        leaderNode = receivedMessagePlus.getVal();
+//                        System.out.println("Node " + originalVal + " has been notified");
+                        rightNeighbor.sendMessage(receivedMessagePlus);
                     }
-                    // revive node on even stage stop, else skip over
-                    else if ((recievedMessagePlus.getStageNum()%2 == 0 && recievedMessagePlus.getDistance() == 0) ||
-                    // revive node on odd stage encounter if it was defeated in the stage prior to the message and message is smaller than last defeated value
-                            (recievedMessagePlus.getDistance() == -1 && lastDeathStageNumber == (recievedMessagePlus.stageNum - 1) && recievedMessagePlus.val < lastDeathCurVal)) {
+                    else if (shouldRevive(receivedMessagePlus))
+                    {
 //                        System.out.println("Node " + curVal + " reviving as " +  recievedMessagePlus.val + " at stage " + stageNumber);
                         minMaxState = MinMaxState.ACTIVE;
-                        stageNumber = recievedMessagePlus.stageNum;
-                        curVal = recievedMessagePlus.val;
-                        stageNumber++;
+                        stageNumber = receivedMessagePlus.stageNum + 1;
+                        curVal = receivedMessagePlus.val;
                         MessagePlus messageToSend = new MessagePlus(curVal, stageNumber);
                         setDistance(messageToSend);
                         rightNeighbor.sendMessage(messageToSend);
                     } else {
-                        rightNeighbor.sendMessage(recievedMessagePlus);
+                        rightNeighbor.sendMessage(receivedMessagePlus);
                     }
 
                     break;
             }
             // message consumed
-            receivedMessage.remove(0);
+            receivedMessage.remove(receivedMessagePlus);
         }
     }
 
-    public void minMaxSurvive() {
+    // TODO Was last working on checking if revival was being done properly. Suspicious that we do ressurection at up to stage 12 for size 300.
+   // At least the nodes are reviving on the right disntace conditions.DOublec check the odd cases to see if we are ressurecting the nodes only if we
+   // have a smaller value than the received messages and an old stage one less than the message stage. Mayeb the queued messages are screwing
+   // things up too due to the pacified node just consuming it's stack of messages? MAybe clear message queue once pacified.
+    public boolean shouldRevive(MessagePlus receivedMessagePlus) {
+       // revive node on even stage stop, else skip over
+       boolean shouldRevive = false;
+       if (MinMaxHelper.isEvenStageMessage(receivedMessagePlus)) {
+          shouldRevive = receivedMessagePlus.getDistance() == 0;
+       } else {
+          // revive node on odd stage encounter if it was defeated in the stage prior to the message and message is smaller than last defeated value
+          shouldRevive = (lastDeathStageNumber == (receivedMessagePlus.stageNum - 1)) && lastDeathCurVal < receivedMessagePlus.val;
+       }
+       if (shouldRevive) {
+          System.out.println("Node " + curVal + " received message " + receivedMessagePlus + " and should revive" );
+       }
+       return shouldRevive;
+    }
+
+    public void minMaxSurvive(MessagePlus receivedMessagePlus) {
 //        System.out.println("Node " + curVal + " recieved message " + receivedMessage.get(0).getVal() + " stage " + receivedMessage.get(0).getStageNum());
         // even stage, kill node if smaller
-        if (receivedMessage.get(0).getStageNum()%2 == 0) {
-            if (receivedMessage.get(0).getVal() < curVal) {
+        if (MinMaxHelper.isEvenStageMessage(receivedMessagePlus)) {
+            if (receivedMessagePlus.getVal() < curVal) {
                 minMaxState = MinMaxState.PASSIVE;
+               lastDeathCurVal = curVal;
+               lastDeathStageNumber = stageNumber;
             }
         }
         // odd stage, kill node if bigger
         else {
-            if (receivedMessage.get(0).getVal() > curVal) {
+            if (receivedMessagePlus.getVal() > curVal) {
                 minMaxState = MinMaxState.PASSIVE;
+               lastDeathCurVal = curVal;
+               lastDeathStageNumber = stageNumber;
             }
         }
 //        System.out.println("Node " + curVal +" survived? " + (minMaxState == MinMaxState.ACTIVE));
     }
 
-    public void checkAndSetIfLeader() {
-        if (curVal == receivedMessage.get(0).getVal()) {
+    public void checkAndSetIfLeader(MessagePlus messagePlus) {
+        if (curVal == messagePlus.getVal()) {
             System.out.println("--------Leader was elected " + curVal + " and had state: " + toString() + "----------");
             minMaxState = MinMaxState.LEADER;
             leaderNode = curVal;
@@ -143,10 +164,11 @@ public class MinMaxPlusNode  {
         }
     }
 
-    public void sendMessageIfActiveBeforeCheckAndSurvive() {
+    public void sendMessageIfActiveBeforeCheckAndSurvive(MessagePlus messagePlus) {
         // if not leader, then minmax survive test
-        MessagePlus messagePlus = receivedMessage.get(0);
-        if (minMaxState == MinMaxState.ACTIVE && messagePlus.getStageNum() >= stageNumber) {
+        if (minMaxState == MinMaxState.ACTIVE
+              && messagePlus.getStageNum() >= stageNumber
+        ) {
             // kill node if it receives a future stage message, store death info, forward message
             if (messagePlus.getStageNum() > stageNumber) {
                 minMaxState = MinMaxState.PASSIVE;
@@ -155,7 +177,7 @@ public class MinMaxPlusNode  {
                 rightNeighbor.sendMessage(messagePlus);
             } else {
                 // if survived, send new message after incrementing stage # and updating current value
-                minMaxSurvive();
+                minMaxSurvive(messagePlus);
                 if (minMaxState == MinMaxState.ACTIVE) {
 //                    int formerValue = curVal;
 //                    System.out.println("Formerly " + formerValue + " becoming " + receivedMessage.get(0).getVal() + " and sending stage " + (stageNumber + 1) + " message to node " + rightNeighbor.curVal + " with status " + rightNeighbor.minMaxState);
@@ -173,7 +195,7 @@ public class MinMaxPlusNode  {
 
     public void setDistance(MessagePlus messageToSend) {
         // if even stage, should set distance following fib sequence
-        if (messageToSend.getStageNum()%2 == 0) {
+        if (MinMaxHelper.isEvenStageMessage(messageToSend)) {
             messageToSend.setDistance(MinMaxHelper.fibonacci(stageNumber));
         } else {
             messageToSend.setDistance(-1);
@@ -181,6 +203,6 @@ public class MinMaxPlusNode  {
     }
 
     public String toString() {
-        return curVal + " at stage " + stageNumber + " has messages " + receivedMessage + " has status " + minMaxState;
+        return "Node: " + curVal + " S" + stageNumber + " M" + receivedMessage + " status: " + minMaxState.toString().substring(0,0);
     }
 }

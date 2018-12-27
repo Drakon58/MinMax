@@ -6,7 +6,7 @@ public class MinMaxNode {
     private int stageNumber = 1;
     private Integer originalVal;
     private Integer curVal;
-    private List<Message> receivedMessage;
+    private List<Message> receivedMessages;
     private MinMaxNode rightNeighbor;
     private MinMaxState minMaxState = MinMaxState.ACTIVE;
 
@@ -15,7 +15,7 @@ public class MinMaxNode {
     public MinMaxNode (int value) {
         originalVal = value;
         curVal = value;
-        receivedMessage = new ArrayList<>();
+        receivedMessages = new ArrayList<>();
     }
 
     public void linkRightNeighborNode(MinMaxNode node) {
@@ -23,7 +23,7 @@ public class MinMaxNode {
     }
 
     public void sendMessage(Message receivedMessage) {
-        this.receivedMessage.add(receivedMessage);
+        this.receivedMessages.add(receivedMessage);
         MinMax.messageCount++;
     }
 
@@ -43,8 +43,8 @@ public class MinMaxNode {
         return rightNeighbor;
     }
 
-    public List<Message> getReceivedMessage() {
-        return receivedMessage;
+    public List<Message> getReceivedMessages() {
+        return receivedMessages;
     }
 
     private enum MinMaxState {
@@ -56,75 +56,63 @@ public class MinMaxNode {
     }
 
     public void action() {
-//        System.out.println("Node " + curVal + " with status " + minMaxState + " has a new message? " + !receivedMessage.isEmpty());
-        if (!receivedMessage.isEmpty()) {
+        if (!receivedMessages.isEmpty()) {
+            Message recievedMessage = receivedMessages.get(0);
             switch(minMaxState) {
                 case ACTIVE:
-//                    System.out.println("Before leader check, current value is " + curVal + " and received message of " + receivedMessage.get(0).getVal());
-                    checkAndSetIfLeader();
-                    sendMessageIfActiveBeforeCheckAndSurvive();
+                    checkAndSetIfLeader(recievedMessage);
+                    sendMessageIfActiveBeforeCheckAndSurvive(recievedMessage);
                     break;
                 case LEADER:
                     // check if notify stage has completed
-                    if (receivedMessage.get(0).getStageNum() == -1) {
+                    if (recievedMessage.getStageNum() == -1) {
                         MinMax.done = true;
-
                     }
                     break;
                 // otherwise a pacified node, so just pass on the message you received unless being notified of leader
                 case PASSIVE:
-                    if (receivedMessage.get(0).getStageNum() == -1) {
+                    if (recievedMessage.getStageNum() == -1) {
                         minMaxState = MinMaxState.NOTIFIED;
-                        leaderNode = receivedMessage.get(0).getVal();
-//                        System.out.println("Node " + curVal + " has been notified");
+                        leaderNode = recievedMessage.getVal();
                     }
-                    else {
-//                        System.out.println("Pacified node forwarding message containing " + receivedMessage.get(0).getVal() + " stage " + receivedMessage.get(0).getStageNum());
-                    }
-                    rightNeighbor.sendMessage(receivedMessage.get(0));
+                    rightNeighbor.sendMessage(recievedMessage);
                     break;
             }
             // message consumed
-            receivedMessage.remove(0);
-//            System.out.println("Node " + curVal + " has messages: " + receivedMessage);
+            receivedMessages.remove(recievedMessage);
         }
     }
 
-    public void minMaxSurvive() {
-//        System.out.println("Node " + curVal + " recieved message " + receivedMessage.get(0).getVal() + " stage " + receivedMessage.get(0).getStageNum());
+    public void minMaxSurvive(Message recievedMessage) {
         // even stage, kill node if smaller
-        if (receivedMessage.get(0).getStageNum()%2 == 0) {
-            if (receivedMessage.get(0).getVal() < curVal) {
+        if (recievedMessage.getStageNum()%2 == 0) {
+            if (recievedMessage.getVal() < curVal) {
                 minMaxState = MinMaxState.PASSIVE;
             }
         }
         // odd stage, kill node if bigger
         else {
-            if (receivedMessage.get(0).getVal() > curVal) {
+            if (recievedMessage.getVal() > curVal) {
                 minMaxState = MinMaxState.PASSIVE;
             }
         }
-//        System.out.println("Node " + curVal +" survived? " + (minMaxState == MinMaxState.ACTIVE));
     }
 
-    public void sendMessageIfActiveBeforeCheckAndSurvive() {
+    public void sendMessageIfActiveBeforeCheckAndSurvive(Message recievedMessage) {
         // if not leader, then minmax survive test
-        if (minMaxState == MinMaxState.ACTIVE && receivedMessage.get(0).getStageNum() >= stageNumber) {
+        if (minMaxState == MinMaxState.ACTIVE && recievedMessage.getStageNum() >= stageNumber) {
             // if survived, send new message after incrementing stage # and updating current value
-            minMaxSurvive();
+            minMaxSurvive(recievedMessage);
             if (minMaxState == MinMaxState.ACTIVE) {
-//                int formerValue = curVal;
-//                System.out.println("Formerly " + formerValue + " becoming " + receivedMessage.get(0).getVal() + " and sending stage " + (stageNumber + 1) + " message to node " + rightNeighbor.curVal + " with status " + rightNeighbor.minMaxState);
                 stageNumber++;
-                curVal = receivedMessage.get(0).getVal();
+                curVal = recievedMessage.getVal();
                 rightNeighbor.sendMessage(new Message(curVal, stageNumber));
-//                System.out.println("Node with former val " + formerValue + " is now " + curVal + " with status " + minMaxState + " and right neighbor received message of " + rightNeighbor.receivedMessage.get(0).getVal());
             }
         }
     }
 
-    public void checkAndSetIfLeader() {
-        if (curVal == receivedMessage.get(0).getVal()) {
+    public void checkAndSetIfLeader(Message recievedMessage) {
+        if (curVal == recievedMessage.getVal()) {
             System.out.println("--------Leader was elected " + curVal + " and had state: " + toString() + "----------");
             minMaxState = MinMaxState.LEADER;
             leaderNode = curVal;
@@ -133,11 +121,6 @@ public class MinMaxNode {
     }
 
     public String toString() {
-//        return "Stage number: " + stageNumber + ", Node value: " + curVal;
-//        return curVal.toString();
-//        return curVal + " right to " + rightNeighbor.curVal.toString() + " has messages " + receivedMessage + " and thinks the leader is " + leaderNode + " has status " + minMaxState;
-        return curVal + " stage " + stageNumber + " has messages " + receivedMessage + " has status " + minMaxState;
-//        return curVal + " thinks the leader is " + leaderNode;
-//        return curVal + " has message with " + receivedMessage.get(0).getVal() + " and stage " + stageNumber + " and state of " + minMaxState.toString() + " and thinks leader is " + leaderNode;
+        return "Node: " + curVal + " S" + stageNumber + " M" + receivedMessages + " status: " + minMaxState.toString().substring(0,3);
     }
 }

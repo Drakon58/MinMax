@@ -39,10 +39,14 @@ public class MinMaxHelper {
     }
 
     public static void generateTestList(List<MinMaxNode> testList) {
-        testList.add(new MinMaxNode(5));
-        testList.add(new MinMaxNode(4));
-        testList.add(new MinMaxNode(3));
         testList.add(new MinMaxNode(2));
+        testList.add(new MinMaxNode(5));
         testList.add(new MinMaxNode(1));
+        testList.add(new MinMaxNode(3));
+        testList.add(new MinMaxNode(4));
+    }
+
+    public static boolean isEvenStageMessage(Message message) {
+        return message.getStageNum()%2 == 0;
     }
 }

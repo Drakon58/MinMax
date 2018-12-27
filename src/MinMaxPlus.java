@@ -15,10 +15,14 @@ public class MinMaxPlus {
     public static int messageCount = 0;
     public static boolean done = false;
     public static List<Integer> listSizes = new ArrayList<>(Arrays.asList(300, 500, 1000, 2000));
-//    public static List<Integer> listSizes = new ArrayList<>(Arrays.asList(300));
+   public static List<MinMaxNode> testList;
 
-    public static void main(String[] args) {
+
+   public static void main(String[] args) {
         // debounce start timer and vars
+        testList = new ArrayList<>();
+        MinMaxHelper.generateTestList(testList);
+
         MinMaxHelper.generateRandomizedUniqueNodes(1);
         startTimer();
         for(Integer listSize: listSizes) {
@@ -46,15 +50,12 @@ public class MinMaxPlus {
 
     public static void runAlg(int listSize) {
         for (MinMaxPlusNode node : nodelist) {
-//            System.out.println("Doing initial setup for node " + node.getCurVal());
-//            System.out.println(nodelist);
-            node.sendMessageIfActiveBeforeCheckAndSurvive();
+            node.sendMessageIfActiveBeforeCheckAndSurvive(node.getReceivedMessage().get(0));
             node.getReceivedMessage().remove(0);
         }
         
         int currentNodeIndex = 0;
         while (!done) {
-//            System.out.println(nodelist);
             nodelist.get(currentNodeIndex).action();
             currentNodeIndex = (currentNodeIndex + 1)%listSize;
         }
@@ -75,11 +76,8 @@ public class MinMaxPlus {
         MinMaxPlusNode firstNode = nodelist.get(0);
         MinMaxPlusNode lastNode = nodelist.get(nodelist.size()-1);
         lastNode.linkRightNeighborNode(firstNode);
-//        System.out.println("First node properly linked? " + (nodelist.get(0).getRightNeighbor() == nodelist.get(nodelist.size()-1)));
         // set last node's message to be from first node
         firstNode.sendMessage(new MessagePlus(lastNode.getCurVal(), lastNode.getStageNumber()));
-//        System.out.println("Last node properly messaged? " + (nodelist.get(nodelist.size()-1).getReceivedMessage().getVal() == nodelist.get(0).getCurVal()));
-
     }
 
     public static void startTimer() {
